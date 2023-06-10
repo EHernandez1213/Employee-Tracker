@@ -1,71 +1,38 @@
-inquirer = require('inquirer');
+const connection = require('../connection');
 
-const mainselection = [
-    {
-        type: 'list',
-        message: 'What do you want to do?',
-        choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role'],
-        name: 'selection'
+class DB {
+    constructor(connection) {
+        this.connection = connection
     }
-]
-
-const addDepartmentPrompt = [
-    {
-        type: 'input',
-        message: 'What is the name of the new department?',
-        name: 'addedDepartment'
+    addDepartment(data) {
+        return this.connection.query('INSERT INTO department SET ?', data)
     }
-]
-
-const addRolePrompt = [
-    {
-        type: 'input',
-        message: "What is the new role called?",
-        name: 'addedRole'
-    },
-    {
-        type: 'number',
-        message: 'What is the salary for this role?',
-        name: 'salary'
-    },
-    {
-        type: 'list',
-        message: 'Which department is this role for?',
-        choices: [], //an array of departments in db
-        name: 'roleDepartment'
+    viewDepartments() {
+        return this.connection.query('SELECT * FROM department')
     }
-]
-
-const addEmployeePrompt = [
-    {
-        type: 'input',
-        message: "What is the employee's first name?",
-        name: 'employeeFirstName'
-    },
-    {
-        type: 'input',
-        message: "What is the employee's last name?",
-        name: 'employeeLastName'
-    },
-    {
-        type: 'list',
-        message: 'Who is their manager?',
-        choices: [], //an array of managers
-        name: 'employeeManager'
-    },
-]
-
-const updateEmployeePrompt = [
-    {
-        type: 'list',
-        message: "Who's role is being updated?",
-        choices: [], //an array of employees
-        name: 'updatedEmployee'
-    },
-    {
-        type: 'list',
-        message: 'What is their new role?',
-        choices: [], //an array of roles
-        name: 'updatedEmployeeRole'
+    removeDepartment(id) {
+        return this.connection.query('DELETE FROM department WHERE id = ?', id)
     }
-]
+    addRole(data) {
+        return this.connection.query('INSERT INTO role SET ?', data)
+    }
+    viewRoles() {
+        return this.connection.query('SELECT role.id, title, salary, department.name FROM role LEFT JOIN department ON role.department_id = department.id')
+    }
+    removeRole(id) {
+        return this.connection.query('DELETE FROM role WHERE id = ?', id)
+    }
+    addEmployee(data) {
+        return this.connection.query('INSERT INTO employee SET ?', data)
+    }
+    viewEmployees() {
+        return this.connection.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, CONCAT (manager.first_name, " ", manager.last_name) AS manager FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON employee.manager_id = manager.id ')
+    }
+    removeEmployee(id) {
+        return this.connection.query('DELETE FROM employee WHERE id = ?', id)
+    }
+    updateEmployeeRole(data) {
+        return this.connection.query('UPDATE employee SET ? WHERE ? ', data)
+    }
+}
+module.exports = new DB(connection);
