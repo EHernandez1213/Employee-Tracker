@@ -1,5 +1,6 @@
-const { default: inquirer } = require('inquirer');
-const { connection } = require('./db');
+var { default: inquirer } = require('inquirer');
+const controller = require('./db/database.js');
+
 
 inquirer = require('inquirer');
 
@@ -10,35 +11,49 @@ const mainselection = [
         choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role', 'Remove a department', 'Remove a role', 'Remove an employee'],
         name: 'selection'
     }
-]
-async function mainSelection() {
-    inquirer.prompt(mainselection).then(answers => {
-        switch (answers.selection) {
-            case 'View all departments':
-                return viewDepartments();
-            case 'View all roles':
-                return viewRoles();
-            case 'View all employees':
-                return viewEmployees();
-            case 'Add a department':
-                return addDepartment();
-            case 'Add a role':
-                return addRole();
-            case 'Add an employee':
-                return addEmployee();
-            case 'Update an employee role':
-                return updateEmployee()
-            case 'Remove a department':
-                return removeDepartment();
-            case 'Remove a role':
-                return removeRole();
-            case 'Remove an employee':
-                return removeEmployee();
-            default:
-                break;
-        }
-    })
-}
+];
+(async function mainSelection() {
+    inquirer
+        .prompt(mainselection)
+        .then(async answers => {
+            switch (answers.selection) {
+                case 'View all departments':
+                    await viewDepartments();
+                    break;
+                case 'View all roles':
+                    await viewRoles();
+                    break;
+                case 'View all employees':
+                    await viewEmployees();
+                    break;
+                case 'Add a department':
+                    await addDepartment();
+                    break;
+                case 'Add a role':
+                    await addRole();
+                    break;
+                case 'Add an employee':
+                    await addEmployee();
+                    break;
+                case 'Update an employee role':
+                    await updateEmployee()
+                    break;
+                case 'Remove a department':
+                    await removeDepartment();
+                    break;
+                case 'Remove a role':
+                    await removeRole();
+                    break;
+                case 'Remove an employee':
+                    await removeEmployee();
+                    break;
+                default:
+                    break;
+            }
+            return mainSelection();
+        });
+})();
+
 const addDepartmentPrompt = [
     {
         type: 'input',
@@ -49,13 +64,12 @@ const addDepartmentPrompt = [
 
 const addDepartment = async () => {
     const department = await inquirer.prompt(addDepartmentPrompt)
-    await connection.addDepartment(department)
+    await controller.addDepartment(department)
     console.log('department added')
-    mainSelection()
 }
 
 async function addRole() {
-    const department = await connection.viewDepartments()
+    const department = await controller.viewAllDepartments()
     const departmentChoices = department.map(({ id, name }) => ({
         name: name,
         value: id
@@ -78,17 +92,16 @@ async function addRole() {
             name: 'roleDepartment'
         }
     ])
-    await connection.addRole(roleId)
-    mainSelection()
+    await controller.addRole(roleId)
 }
 
 async function addEmployee() {
-    const role = await connection.viewRoles()
+    const role = await controller.viewAllRoles()
     const roleChoices = role.map(({ id, name }) => ({
         name: name,
         value: id
     }));
-    const manager = await connection.viewManagers()
+    const manager = await controller.viewManagers()
     const managerChoices = manager.map(({ id, firstName, lastName }) => ({
         name: `${firstName} ${lastName}`,
         value: id
@@ -117,22 +130,23 @@ async function addEmployee() {
             name: 'employeeManager'
         },
     ])
-    await connection.addEmployee(employeeId)
-    mainSelection()
+    await controller.addEmployee(employeeId)
+
 }
 
 async function updateEmployee() {
-    const employee = await connection.viewEmployees()
-    const employeeChoices = employee.map(({ id, firstName, lastName }) => ({
-        name: `${firstName} ${lastName}`,
+    const employee = (await controller.viewAllEmployees())[0]
+    const employeeChoices = employee.map(({ id, first_name, last_name }) => ({
+        name: `${first_name} ${last_name}`,
         value: id
     }));
-    const role = await connection.viewRoles()
-    const roleChoices = role.map(({ id, name }) => ({
-        name: name,
-        value: id
+    const roles = (await controller.viewAllRoles())[0]
+    console.log(roles);
+    const roleChoices = roles.map((r) => ({
+        name: r.name,
+        value: r.id
     }));
-    const { updatedEmployee } = await inquirer.prompt([
+    const updatedEmployee = await inquirer.prompt([
         {
             type: 'list',
             message: "Who's role is being updated",
@@ -146,30 +160,32 @@ async function updateEmployee() {
             name: 'updateRole'
         }
     ])
-    await connection.updateEmployee(updatedEmployee)
-    mainSelection()
+    console.log(updatedEmployee);
+    return;
+    await controller.updateEmployeeRole(updatedEmployee)
+
 }
 
 async function viewDepartments() {
-    const departments = await connection.viewAllDepartments()
+    const departments = (await controller.viewAllDepartments())[0]
     console.table(departments)
-    mainSelection()
+
 }
 
 async function viewRoles() {
-    const roles = await connection.viewAllRoles()
+    const roles = (await controller.viewAllRoles())[0]
     console.table(roles)
-    mainSelection()
+
 }
 
 async function viewEmployees() {
-    const employees = await connection.viewAllEmployees()
+    const employees = (await controller.viewAllEmployees())[0]
     console.table(employees)
-    mainSelection()
+
 }
 
 async function removeDepartment() {
-    const department = await connection.viewDepartments()
+    const department = await controller.viewAllDepartments()
     const departmentChoices = department.map(({ id, name }) => ({
         name: name,
         value: id
@@ -177,12 +193,12 @@ async function removeDepartment() {
     const { departmentId } = await inquirer.prompt({
         type: "list", name: "departmentId", message: "Which department do you want to remove?", choices: departmentChoices
     })
-    await connection.removeDepartment(departmentId)
-    mainSelection()
+    await controller.removeDepartment(departmentId)
+
 }
 
 async function removeRole() {
-    const role = await connection.viewRoles()
+    const role = await controller.viewAllRoles()
     const roleChoices = role.map(({ id, name }) => ({
         name: name,
         value: id
@@ -190,12 +206,12 @@ async function removeRole() {
     const { roleId } = await inquirer.prompt({
         type: "list", name: "roleId", message: "Which role do you want to remove?", choices: roleChoices
     })
-    await connection.removeRole(roleId)
-    mainSelection()
+    await controller.removeRole(roleId)
+
 }
 
 async function removeEmployee() {
-    const employee = await connection.viewEmployees()
+    const employee = await controller.viewAllEmployees()
     const employeeChoices = employee.map(({ id, name }) => ({
         name: name,
         value: id
@@ -203,6 +219,6 @@ async function removeEmployee() {
     const { employeeId } = await inquirer.prompt({
         type: "list", name: "employeeId", message: "Which employee do you want to remove?", choices: employeeChoices
     })
-    await connection.removeEmployee(employeeId)
-    mainSelection()
+    await controller.removeEmployee(employeeId)
+
 }
