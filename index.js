@@ -69,16 +69,16 @@ const addDepartment = async () => {
 }
 
 async function addRole() {
-    const department = await controller.viewAllDepartments()
+    const department = (await controller.viewAllDepartments())[0]
     const departmentChoices = department.map(({ id, name }) => ({
         name: name,
         value: id
     }));
-    const { roleId } = await inquirer.prompt([
+    const roleId = await inquirer.prompt([
         {
             type: 'input',
             message: "What is the new role called?",
-            name: 'addedRole'
+            name: 'title'
         },
         {
             type: 'number',
@@ -89,45 +89,45 @@ async function addRole() {
             type: 'list',
             message: 'Which department is this role for?',
             choices: departmentChoices,
-            name: 'roleDepartment'
+            name: 'department'
         }
     ])
     await controller.addRole(roleId)
 }
 
 async function addEmployee() {
-    const role = await controller.viewAllRoles()
+    const role = (await controller.viewAllRoles())[0]
     const roleChoices = role.map(({ id, name }) => ({
         name: name,
         value: id
     }));
-    const manager = await controller.viewManagers()
+    const manager = (await controller.viewManagers())[0]
     const managerChoices = manager.map(({ id, firstName, lastName }) => ({
         name: `${firstName} ${lastName}`,
         value: id
     }));
-    const { employeeId } = await inquirer.prompt([
+    const employeeId = await inquirer.prompt([
         {
             type: 'input',
             message: "What is the employee's first name?",
-            name: 'employeeFirstName'
+            name: 'firstName'
         },
         {
             type: 'input',
             message: "What is the employee's last name?",
-            name: 'employeeLastName'
+            name: 'lastName'
         },
         {
             type: 'list',
             message: 'What is their role?',
             choices: roleChoices,
-            name: 'employeeRole'
+            name: 'role'
         },
         {
             type: 'list',
             message: 'Who is their manager?',
             choices: managerChoices,
-            name: 'employeeManager'
+            name: 'manager'
         },
     ])
     await controller.addEmployee(employeeId)
@@ -143,7 +143,7 @@ async function updateEmployee() {
     const roles = (await controller.viewAllRoles())[0]
     console.log(roles);
     const roleChoices = roles.map((r) => ({
-        name: r.name,
+        name: r.title,
         value: r.id
     }));
     const updatedEmployee = await inquirer.prompt([
@@ -160,8 +160,7 @@ async function updateEmployee() {
             name: 'updateRole'
         }
     ])
-    console.log(updatedEmployee);
-    return;
+
     await controller.updateEmployeeRole(updatedEmployee)
 
 }
@@ -185,39 +184,39 @@ async function viewEmployees() {
 }
 
 async function removeDepartment() {
-    const department = await controller.viewAllDepartments()
+    const department = (await controller.viewAllDepartments())[0]
     const departmentChoices = department.map(({ id, name }) => ({
         name: name,
         value: id
     }));
-    const { departmentId } = await inquirer.prompt({
-        type: "list", name: "departmentId", message: "Which department do you want to remove?", choices: departmentChoices
+    const departmentId = await inquirer.prompt({
+        type: "list", name: "id", message: "Which department do you want to remove?", choices: departmentChoices
     })
     await controller.removeDepartment(departmentId)
 
 }
 
 async function removeRole() {
-    const role = await controller.viewAllRoles()
-    const roleChoices = role.map(({ id, name }) => ({
-        name: name,
+    const role = (await controller.viewAllRoles())[0]
+    const roleChoices = role.map(({ id, title }) => ({
+        name: title,
         value: id
     }));
-    const { roleId } = await inquirer.prompt({
-        type: "list", name: "roleId", message: "Which role do you want to remove?", choices: roleChoices
+    const roleId = await inquirer.prompt({
+        type: "list", name: "id", message: "Which role do you want to remove?", choices: roleChoices
     })
     await controller.removeRole(roleId)
 
 }
 
 async function removeEmployee() {
-    const employee = await controller.viewAllEmployees()
-    const employeeChoices = employee.map(({ id, name }) => ({
-        name: name,
+    const employee = (await controller.viewAllEmployees())[0]
+    const employeeChoices = employee.map(({ id, first_name, last_name }) => ({
+        name: `${first_name} ${last_name}`,
         value: id
     }));
-    const { employeeId } = await inquirer.prompt({
-        type: "list", name: "employeeId", message: "Which employee do you want to remove?", choices: employeeChoices
+    const employeeId = await inquirer.prompt({
+        type: "list", name: "id", message: "Which employee do you want to remove?", choices: employeeChoices
     })
     await controller.removeEmployee(employeeId)
 
