@@ -42,7 +42,7 @@ class DB {
         return this.connection.promise().query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, CONCAT (manager.first_name, " ", manager.last_name) AS manager FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON employee.manager_id = manager.id ')
     }
     viewManagers() {
-        return this.connection.promise().query("SELECT id, first_name, last_name FROM role LEFT JOIN employee WHERE title = 'manager' ")
+        return this.connection.promise().query('SELECT employee.id, CONCAT (employee.first_name, " ", employee.last_name) AS name,role.title FROM employee LEFT JOIN role ON employee.role_id = role.id WHERE employee.manager_id IS NULL and role.title = "manager"')
     }
     removeEmployee(id) {
         return this.connection.promise().query('DELETE FROM employee WHERE ?', id)

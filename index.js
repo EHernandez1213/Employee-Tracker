@@ -102,8 +102,8 @@ async function addEmployee() {
         value: id
     }));
     const manager = (await controller.viewManagers())[0]
-    const managerChoices = manager.map(({ id, firstName, lastName }) => ({
-        name: `${firstName} ${lastName}`,
+    const managerChoices = manager.map(({ id, name }) => ({
+        name: name,
         value: id
     }));
     const employeeId = await inquirer.prompt([
