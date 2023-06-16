@@ -93,12 +93,13 @@ async function addRole() {
         }
     ])
     await controller.addRole(roleId)
+    console.log('role added')
 }
 
 async function addEmployee() {
     const role = (await controller.viewAllRoles())[0]
-    const roleChoices = role.map(({ id, name }) => ({
-        name: name,
+    const roleChoices = role.map(({ id, title }) => ({
+        name: title,
         value: id
     }));
     const manager = (await controller.viewManagers())[0]
@@ -131,7 +132,7 @@ async function addEmployee() {
         },
     ])
     await controller.addEmployee(employeeId)
-
+    console.log('employee added')
 }
 
 async function updateEmployee() {
@@ -141,7 +142,6 @@ async function updateEmployee() {
         value: id
     }));
     const roles = (await controller.viewAllRoles())[0]
-    console.log(roles);
     const roleChoices = roles.map((r) => ({
         name: r.title,
         value: r.id
@@ -160,27 +160,23 @@ async function updateEmployee() {
             name: 'updateRole'
         }
     ])
-
     await controller.updateEmployeeRole(updatedEmployee)
-
+    console.log('employee updated')
 }
 
 async function viewDepartments() {
     const departments = (await controller.viewAllDepartments())[0]
     console.table(departments)
-
 }
 
 async function viewRoles() {
     const roles = (await controller.viewAllRoles())[0]
     console.table(roles)
-
 }
 
 async function viewEmployees() {
     const employees = (await controller.viewAllEmployees())[0]
     console.table(employees)
-
 }
 
 async function removeDepartment() {
@@ -193,7 +189,7 @@ async function removeDepartment() {
         type: "list", name: "id", message: "Which department do you want to remove?", choices: departmentChoices
     })
     await controller.removeDepartment(departmentId)
-
+    console.log('department removed')
 }
 
 async function removeRole() {
@@ -206,7 +202,7 @@ async function removeRole() {
         type: "list", name: "id", message: "Which role do you want to remove?", choices: roleChoices
     })
     await controller.removeRole(roleId)
-
+    console.log('role removed')
 }
 
 async function removeEmployee() {
@@ -219,5 +215,5 @@ async function removeEmployee() {
         type: "list", name: "id", message: "Which employee do you want to remove?", choices: employeeChoices
     })
     await controller.removeEmployee(employeeId)
-
+    console.log('employee removed')
 }
